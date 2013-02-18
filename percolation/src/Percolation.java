@@ -120,26 +120,4 @@ public class Percolation {
 		return percolates;
 	}
 	
-	public static void main(String[] args) {
-		int N = 4;
-		Percolation p = new Percolation(N);
-		
-		for (int i = 1; i <= N; i++) 
-		{
-			for (int j = 1; j <= N; j++)
-			{
-				boolean open = p.isOpen(i, j);
-				assert !open : "isOpen() returned incorrect state for i="+i +", j="+ j;
-			}
-		}
-		
-		p.open(1, 2);
-		p.open(2, 2);
-		p.open(2, 3);
-		p.open(3, 3);
-		p.open(3, 4);
-		p.open(4, 4);
-		
-		System.out.println(p.percolates());
-	}
 }

@@ -9,15 +9,17 @@ public class PercolationStats {
 
 		int count = 0;
 		while (!p.percolates()) {
-			int i = StdRandom.uniform(N)+1;
-			int j = StdRandom.uniform(N)+1;
+			int x = StdRandom.uniform(N*N);
+			int i = x/N + 1;
+			int j = x%N + 1;
 
-			p.open(i, j);
-			count++;
+			if(!p.isOpen(i, j))
+			{
+				p.open(i, j);
+				count++;
+			}
 		}
 		
-		System.out.println(count);
-
 		return (((double) count) / ((double) (N * N)));
 	}
 
