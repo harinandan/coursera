@@ -19,6 +19,7 @@ public class Percolation {
         NSQUARE = N * N;
         grid = new boolean[N][N];
         algorithm = new WeightedQuickUnionUF(N * N + 2);
+        /*
         for (int q = 1; q <= N; q++) {
             algorithm.union(0, q);
         }
@@ -26,6 +27,7 @@ public class Percolation {
         for (int p = nSquare - N + 1; p <= nSquare; p++) {
             algorithm.union(p, nSquare + 1);
         }
+        */
     }
 
     private boolean validIndex(int k) {
@@ -64,6 +66,13 @@ public class Percolation {
         validateSite(row, col);
 
         grid[row][col] = true;
+        int x = toOneDimensionIndex(row, col);
+        if (x >= 1 && x <= N) {
+            algorithm.union(0, x);
+        }
+        if (x >= NSQUARE - N + 1 && x <= NSQUARE) {
+            algorithm.union(x, NSQUARE + 1);
+        }
 
         int p = toOneDimensionIndex(row, col);
         int q = -1;
