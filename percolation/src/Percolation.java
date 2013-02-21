@@ -70,9 +70,11 @@ public class Percolation {
         if (x >= 1 && x <= N) {
             algorithm.union(0, x);
         }
+        /*
         if (x >= NSQUARE - N + 1 && x <= NSQUARE) {
             algorithm.union(x, NSQUARE + 1);
         }
+        */
 
         int p = toOneDimensionIndex(row, col);
         int q = -1;
@@ -150,6 +152,13 @@ public class Percolation {
      * @return
      */
     public boolean percolates() {
-        return algorithm.connected(0, NSQUARE + 1);
+        for (int q = NSQUARE - N + 1; q <= NSQUARE; q++) {
+            boolean percolates = algorithm.connected(0, q);
+            if (percolates) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
