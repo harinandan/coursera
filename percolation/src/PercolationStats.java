@@ -1,78 +1,100 @@
 public class PercolationStats {
-    private double _estPercolationThresholds [];
-    private int _T;
-    private double _mean;
-    private double _stddev;
 
-	private double conductExperiment(int N) {
-		Percolation p = new Percolation(N);
+    private static final double CONFIDENCECOEFF = 1.96;
 
-		int count = 0;
-		while (!p.percolates()) {
-			int x = StdRandom.uniform(N*N);
-			int i = x/N + 1;
-			int j = x%N + 1;
+    private double [] estPercolationThresholds;
+    private int T;
+    private double mean;
+    private double stddev;
 
-			if(!p.isOpen(i, j))
-			{
-				p.open(i, j);
-				count++;
-			}
-		}
-		
-		return (((double) count) / ((double) (N * N)));
-	}
+    /**
+     * perform T independent computational experiments on an N-by-N grid.
+     *
+     * @param N
+     * @param T
+     */
+    public PercolationStats(int N, int T) {
+        if (N <= 0) {
+            throw new IllegalArgumentException(
+                    "Value of N cannot be less than or equal to 0 : N = " + N);
+        }
+        if (T <= 0) {
+            throw new IllegalArgumentException(
+                    "Value of T cannot be less than or equal to 0 : T = " + T);
+        }
 
-	public PercolationStats(int N, int T) // perform T independent computational
-											// experiments on an N-by-N grid
-	{
-		if (N <= 0)
-			throw new IllegalArgumentException(
-					"Value of N cannot be less than or equal to 0 : N = " + N);
-		if (T <= 0)
-			throw new IllegalArgumentException(
-					"Value of T cannot be less than or equal to 0 : T = " + T);
-		
-		_T = T;
-		_estPercolationThresholds = new double[_T];
-		
-		for (int i = 0; i < T; i++) {
-			_estPercolationThresholds[i] = conductExperiment(N);
-		}
-		
-		_mean = StdStats.mean(_estPercolationThresholds);
-		_stddev = StdStats.stddev(_estPercolationThresholds);
+        this.T = T;
+        estPercolationThresholds = new double[T];
 
-	}
+        for (int i = 0; i < T; i++) {
+            estPercolationThresholds[i] = conductExperiment(N);
+        }
 
-	public double mean() // sample mean of percolation threshold
-	{
-		return _mean;
-	}
+        mean = StdStats.mean(estPercolationThresholds);
+        stddev = StdStats.stddev(estPercolationThresholds);
 
-	public double stddev() // sample standard deviation of percolation threshold
-	{
-		return _stddev;
-	}
+    }
 
-	public double confidenceLo() // returns lower bound of the 95% confidence interval
-	{
-		return _mean - (1.96*_stddev/Math.sqrt(_T));
-	}
+    private double conductExperiment(int N) {
+        Percolation p = new Percolation(N);
 
-	public double confidenceHi() // returns upper bound of the 95% confidence interval
-	{
-		return _mean - (1.96*_stddev/Math.sqrt(_T));
-	}
+        int count = 0;
+        while (!p.percolates()) {
+            int i = StdRandom.uniform(N) + 1;
+            int j = StdRandom.uniform(N) + 1;
 
-	public static void main(String[] args) // test client, described below
-	{
-		PercolationStats ps = new PercolationStats(Integer.parseInt(args[0]),
-				Integer.parseInt(args[1]));
-		System.out.println("mean                    = " + ps.mean());
-		System.out.println("stddev                  = " + ps.stddev());
-		System.out.println("95% confidence interval = " + ps.confidenceLo()
-				+ ", " + ps.confidenceHi());
-	}
+            if (!p.isOpen(i, j)) {
+                p.open(i, j);
+                count++;
+            }
+        }
+
+        return (((double) count) / ((double) (N * N)));
+    }
+
+    /** sample mean of percolation threshold.
+     *
+     * @return
+     */
+    public double mean() {
+        return mean;
+    }
+
+    /** sample standard deviation of percolation threshold.
+     *
+     * @return
+     */
+    public double stddev() {
+        return stddev;
+    }
+
+    /** returns lower bound of the 95% confidence interval.
+     *
+     * @return
+     */
+    public double confidenceLo() {
+        return mean - (CONFIDENCECOEFF * stddev / Math.sqrt(T));
+    }
+
+    /** returns upper bound of the 95% confidence interval.
+     *
+     * @return
+     */
+    public double confidenceHi() {
+        return mean - (CONFIDENCECOEFF * stddev / Math.sqrt(T));
+    }
+
+    /** test client, described below.
+     *
+     * @param args
+     */
+    public static void main(String[] args) {
+        PercolationStats ps = new PercolationStats(Integer.parseInt(args[0]),
+                Integer.parseInt(args[1]));
+        System.out.println("mean                    = " + ps.mean());
+        System.out.println("stddev                  = " + ps.stddev());
+        System.out.println("95% confidence interval = " + ps.confidenceLo()
+                + ", " + ps.confidenceHi());
+    }
 
 }

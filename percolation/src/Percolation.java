@@ -1,123 +1,146 @@
+/**
+ * Percolation assignment.
+ * @author harinandan
+ *
+ */
 public class Percolation {
-	private WeightedQuickUnionUF _algorithm;
-	private int _N;
-	private boolean _grid[][]; 
 
-	private boolean validIndex(int k)
-	{
-		if(k < 0 || k >= _N)
-			return false;
-		
-		return true;
-	}
-	
-	private int toOneDimensionIndex(int i, int j)
-	{
-		return i*_N + j;
-	}
-	
-	public Percolation(int N) // create N-by-N grid, with all sites blocked
-	{
-		_N = N;
-		_grid = new boolean[_N][_N];
-		_algorithm = new WeightedQuickUnionUF(_N*_N);
-	}
+    private WeightedQuickUnionUF algorithm;
+    private int N;
+    private int NSQUARE;
+    private boolean [][]grid;
 
-	public void open(int i, int j) // open site (row i, column j) if it is not already
-	{
-		if(!validIndex(i-1))
-			throw new IndexOutOfBoundsException("Value of i is out of bounds (1 <= i <= "+_N+") : i = "+i); 
-		if(!validIndex(j-1))
-			throw new IndexOutOfBoundsException("Value of j is out of bounds (1 <= j <= "+_N+") : j = "+j);
-		i--;
-		j--;
+    /** create N-by-N grid, with all sites blocked.
+     *
+     * @param N
+     */
+    public Percolation(int N) {
+        this.N = N;
+        NSQUARE = N * N;
+        grid = new boolean[N][N];
+        algorithm = new WeightedQuickUnionUF(N * N + 2);
+        for (int q = 1; q <= N; q++) {
+            algorithm.union(0, q);
+        }
+        int nSquare = N * N;
+        for (int p = nSquare - N + 1; p <= nSquare; p++) {
+            algorithm.union(p, nSquare + 1);
+        }
+    }
 
-		_grid[i][j] = true;
-		
-		int p = toOneDimensionIndex(i, j);
-		int q = -1;
-		
-		int k = i, l = j;
-		
-		if(validIndex(l))
-		{
-			//Left
-			k--;
-			if(validIndex(k) && isOpen(k+1,l+1))
-			{
-				q = toOneDimensionIndex(k, l);
-				_algorithm.union(p, q);
-			}
-			k++;
-			
-			//Right
-			k++;
-			if(validIndex(k) && isOpen(k+1,l+1))
-			{
-				q = toOneDimensionIndex(k, l);
-				_algorithm.union(p, q);
-			}
-			k--;
-		}
-		
-		if(validIndex(k))
-		{
-			//Top
-			l--;
-			if(validIndex(l) && isOpen(k+1,l+1))
-			{
-				q = toOneDimensionIndex(k, l);
-				_algorithm.union(p, q);
-			}
-			l++;
-			
-			//Bottom
-			l++;
-			if(validIndex(l) && isOpen(k+1,l+1))
-			{
-				q = toOneDimensionIndex(k, l);
-				_algorithm.union(p, q);
-			}
-			l--;
-		}
-		
-	}
+    private boolean validIndex(int k) {
+        if (k < 0 || k >= N) {
+            return false;
+        }
 
-	public boolean isOpen(int i, int j) // is site (row i, column j) open?
-	{
-		if(!validIndex(i-1))
-			throw new IndexOutOfBoundsException("Value of i is out of bounds (1 <= i <= "+_N+") : i = "+i); 
-		if(!validIndex(j-1))
-			throw new IndexOutOfBoundsException("Value of j is out of bounds (1 <= j <= "+_N+") : j = "+j);
-		i--;
-		j--;
+        return true;
+    }
 
-		return _grid[i][j];
-	}
+    private void validateSite(int i, int j) {
+        if (!validIndex(i)) {
+            throw new IndexOutOfBoundsException(
+                "Value of i is out of bounds (1 <= i <= "
+                        + N + ") : i = " + i);
+        }
+        if (!validIndex(j)) {
+            throw new IndexOutOfBoundsException(
+                "Value of j is out of bounds (1 <= j <= "
+                        + N + ") : j = " + j);
+        }
+    }
 
-	public boolean isFull(int i, int j) // is site (row i, column j) full?
-	{
-		if(!validIndex(i-1))
-			throw new IndexOutOfBoundsException("Value of i is out of bounds (1 <= i <= "+_N+") : i = "+i); 
-		if(!validIndex(j-1))
-			throw new IndexOutOfBoundsException("Value of j is out of bounds (1 <= j <= "+_N+") : j = "+j);
-		i--;
-		j--;
-		
-		boolean full = false;
-		for (int p = 0; p < _N && !full; p++) {
-			full = _algorithm.connected(p, toOneDimensionIndex(i, j));
-		}
-		return full;
-	}
+    private int toOneDimensionIndex(int i, int j) {
+        return i * N + j + 1;
+    }
 
-	public boolean percolates() // does the system percolate?
-	{
-		boolean percolates = false;
-		for (int j = 1; j <= _N && !percolates; j++) {
-			percolates = isFull(_N, j);
-		}
-		return percolates;
-	}
-	
+    /** open site (row i, column j) if it is not already.
+     *
+     * @param row
+     * @param col
+     */
+    public void open(int i, int j) {
+        int row = i - 1;
+        int col = j - 1;
+        validateSite(row, col);
+
+        grid[row][col] = true;
+
+        int p = toOneDimensionIndex(row, col);
+        int q = -1;
+
+        int k = row, l = col;
+
+        if (validIndex(l)) {
+            //Left
+            k--;
+            if (validIndex(k) && isOpen(k + 1, l + 1)) {
+                q = toOneDimensionIndex(k, l);
+                algorithm.union(p, q);
+            }
+            k++;
+
+            //Right
+            k++;
+            if (validIndex(k) && isOpen(k + 1, l + 1)) {
+                q = toOneDimensionIndex(k, l);
+                algorithm.union(p, q);
+            }
+            k--;
+        }
+
+        if (validIndex(k)) {
+            //Top
+            l--;
+            if (validIndex(l) && isOpen(k + 1, l + 1)) {
+                q = toOneDimensionIndex(k, l);
+                algorithm.union(p, q);
+            }
+            l++;
+
+            //Bottom
+            l++;
+            if (validIndex(l) && isOpen(k + 1, l + 1)) {
+                q = toOneDimensionIndex(k, l);
+                algorithm.union(p, q);
+            }
+            l--;
+        }
+
+    }
+
+    /** is site (row i, column j) open?
+     * @param i
+     * @param j
+     * @return
+     */
+    public boolean isOpen(int i, int j) {
+        int row = i - 1;
+        int col = j - 1;
+        validateSite(row, col);
+
+        return grid[row][col];
+    }
+
+    /**  is site (row i, column j) full?
+     *
+     * @param i
+     * @param j
+     * @return
+     */
+    public boolean isFull(int i, int j) {
+        int row = i - 1;
+        int col = j - 1;
+        validateSite(row, col);
+
+        return isOpen(i, j)
+            && algorithm.connected(0, toOneDimensionIndex(row, col));
+    }
+
+    /** does the system percolate?
+     *
+     * @return
+     */
+    public boolean percolates() {
+        return algorithm.connected(0, NSQUARE + 1);
+    }
 }
