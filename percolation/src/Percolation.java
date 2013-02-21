@@ -4,11 +4,17 @@
  *
  */
 public class Percolation {
+    private class Node {
+        int data = -1;
+        Node next = null;
+    }
 
     private WeightedQuickUnionUF algorithm;
     private int N;
     private int NSQUARE;
     private boolean [][]grid;
+    private Node first = null;
+    private Node last = null;
 
     /** create N-by-N grid, with all sites blocked.
      *
@@ -28,6 +34,41 @@ public class Percolation {
             algorithm.union(p, nSquare + 1);
         }
         */
+    }
+
+    private void add(int d) {
+        if (first == null) {
+            first = new Node();
+            last = first;
+            first.data = d;
+        } else {
+            last.next = new Node();
+            last.next.data = d;
+            last = last.next;
+        }
+    }
+
+    private void process() {
+        Node prev = null;
+        Node ret = first;
+        while (ret != null) {
+            if (algorithm.connected(0, ret.data)) {
+                algorithm.union(ret.data, NSQUARE + 1);
+                if (prev == null) {
+                    first = ret.next;
+                    if (first == null) {
+                        last = null;
+                    }
+                } else {
+                    prev.next = ret.next;
+                    if (ret == last) {
+                        last = prev;
+                    }
+                }
+            }
+            ret = ret.next;
+            prev = ret;
+        }
     }
 
     private boolean validIndex(int k) {
@@ -70,11 +111,13 @@ public class Percolation {
         if (x >= 1 && x <= N) {
             algorithm.union(0, x);
         }
-        /*
         if (x >= NSQUARE - N + 1 && x <= NSQUARE) {
-            algorithm.union(x, NSQUARE + 1);
+            if (algorithm.connected(0, x)) {
+                algorithm.union(x, NSQUARE + 1);
+            } else {
+                add(x);
+            }
         }
-        */
 
         int p = toOneDimensionIndex(row, col);
         int q = -1;
@@ -117,6 +160,7 @@ public class Percolation {
             l--;
         }
 
+        process();
     }
 
     /** is site (row i, column j) open?
@@ -152,13 +196,6 @@ public class Percolation {
      * @return
      */
     public boolean percolates() {
-        for (int q = NSQUARE - N + 1; q <= NSQUARE; q++) {
-            boolean percolates = algorithm.connected(0, q);
-            if (percolates) {
-                return true;
-            }
-        }
-
-        return false;
+        return algorithm.connected(0, NSQUARE + 1);
     }
 }
